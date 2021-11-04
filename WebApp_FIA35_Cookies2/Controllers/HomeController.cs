@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,34 +25,45 @@ namespace WebApp_FIA35_Cookies2.Controllers
         {
             if (ModelState.IsValid)
             {
-                HttpContext.Response.Cookies.Append("KeksPersonNachname", person.Nachname, new CookieOptions { Expires = new DateTime(2021, 11, 11) });
+                string jsonString = JsonConvert.SerializeObject(person);
+                HttpContext.Response.Cookies.Append("KeksPerson", jsonString, new CookieOptions { Expires = new DateTime(2021, 11, 11) });
 
                 return RedirectToAction("Zweite");
-            }                        
+            }
 
             return View(person);
         }
 
 
         [HttpGet]
-        public IActionResult Zweite(Person person)
+        public IActionResult Zweite()
         {
-            Person newPerson = new();
 
-            if (HttpContext.Request.Cookies["KeksPersonNachname"] != null)
+            if (HttpContext.Request.Cookies["KeksPerson"] != null)
             {
-                newPerson.Nachname = HttpContext.Request.Cookies["KeksPersonNachname"];
+                Person deserializedPerson = JsonConvert.DeserializeObject<Person>(HttpContext.Request.Cookies["KeksPerson"]);
+                return View(deserializedPerson);
             }
 
-            return View(newPerson);
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
-        public IActionResult Zweite(Person person, int id)
+        public IActionResult Zweite(Person person)
         {
             if (ModelState.IsValid)
             {
-                return RedirectToAction("Ergebnis");
+                if (HttpContext.Request.Cookies["KeksPerson"] != null)
+                {
+                    Person deserializedPerson = JsonConvert.DeserializeObject<Person>(HttpContext.Request.Cookies["KeksPerson"]);
+                    deserializedPerson.Vorname = person.Vorname;
+                    deserializedPerson.Alter = person.Alter;
+
+                    string jsonString = JsonConvert.SerializeObject(deserializedPerson);
+                    HttpContext.Response.Cookies.Append("KeksPerson", jsonString, new CookieOptions { Expires = new DateTime(2021, 11, 11) });
+
+                    return RedirectToAction("Ergebnis");
+                }
             }
 
             return View(person);
@@ -59,16 +71,20 @@ namespace WebApp_FIA35_Cookies2.Controllers
         }
 
         [HttpGet]
-        public IActionResult Ergebnis(Person person)
+        public IActionResult Ergebnis()
         {
-            Person newPerson = new();
+           
+            if (HttpContext.Request.Cookies["KeksPerson"] != null)
+            {
+                Person deserializedPerson = JsonConvert.DeserializeObject<Person>(HttpContext.Request.Cookies["KeksPerson"]);
+                HttpContext.Response.Cookies.Append("KeksPerson", "", new CookieOptions { Expires = DateTime.Today.AddDays(-1) });
 
-            newPerson.Nachname = person.Nachname;
+                return View(deserializedPerson);
+            }
 
+            return RedirectToAction("Index");
 
-            return View(newPerson);
         }
-               
 
     }
 }
