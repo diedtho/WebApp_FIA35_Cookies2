@@ -1,0 +1,23 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model WebApp_FIA35_Cookies2.Models.Person
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Ergebnis</title>
+</head>
+<body>
+    <div>
+        <textarea>Ah!\n{@Model.Vorname} {@Model.Nachname}\nSie sind {@Model.Alter} Jahre alt.</textarea>
+    </div>
+    <div>
+        <a href="/home/index">Zurück zu Start</a>
+    </div>
+</body>
+</html>
